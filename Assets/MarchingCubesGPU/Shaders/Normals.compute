@@ -1,0 +1,31 @@
+
+#pragma kernel CSMain
+
+struct Voxel
+{
+	float	sdf;
+	float4	color;
+	int		weight;
+};
+
+StructuredBuffer<Voxel> _Voxels;
+
+RWTexture3D<float3> _Result;
+
+int _Width, _Height;
+
+[numthreads(8,8,8)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	float v = _Voxels[id.x + id.y * _Width + id.z * _Width * _Height].sdf;
+	
+	float dx = v - _Voxels[(id.x+1) + id.y * _Width + id.z * _Width * _Height].sdf;
+	
+	float dy = v - _Voxels[id.x + (id.y+1) * _Width + id.z * _Width * _Height].sdf;
+	
+	float dz = v - _Voxels[id.x + id.y * _Width + (id.z+1) * _Width * _Height].sdf;
+	
+
+	_Result[id] = normalize(float3(dx,dy,dz));
+
+}
